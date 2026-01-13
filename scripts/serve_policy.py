@@ -9,7 +9,21 @@ from openpi.policies import policy as _policy
 from openpi.policies import policy_config as _policy_config
 from openpi.serving import websocket_policy_server
 from openpi.training import config as _config
+from openpi.policies.FalconVLAPolicy import FalconVLAConfig, FalconVLAPolicy
+# ^ adjust module name to your actual filename
 
+@dataclasses.dataclass
+class FalconVLA:
+    """Serve FalconVLA (HF) via the custom torch policy wrapper."""
+    model_name: str = "/models/FalconVLA"
+    hf_token: str | None = None
+    horizon: int = 25
+    unnorm_key: str = "burger_270_episodes"
+    use_wrist: bool = True
+    use_secondary: bool = True
+    use_proprio: bool = False
+    normalize_gripper: bool = False
+    invert_gripper: bool = False
 
 class EnvMode(enum.Enum):
     """Supported environments."""
@@ -52,7 +66,7 @@ class Args:
     record: bool = False
 
     # Specifies how to load the policy. If not provided, the default policy for the environment will be used.
-    policy: Checkpoint | Default = dataclasses.field(default_factory=Default)
+    policy: Checkpoint | Default | FalconVLA = dataclasses.field(default_factory=Default)
 
 
 # Default checkpoints that should be used for each environment.
@@ -85,8 +99,7 @@ def create_default_policy(env: EnvMode, *, default_prompt: str | None = None) ->
     raise ValueError(f"Unsupported environment mode: {env}")
 
 
-def create_policy(args: Args) -> _policy.Policy:
-    """Create a policy from the given arguments."""
+def create_policy(args: Args):
     match args.policy:
         case Checkpoint():
             return _policy_config.create_trained_policy(
@@ -94,6 +107,19 @@ def create_policy(args: Args) -> _policy.Policy:
             )
         case Default():
             return create_default_policy(args.env, default_prompt=args.default_prompt)
+        case FalconVLA():
+            cfg = FalconVLAConfig(
+                model_name=args.policy.model_name,
+                hf_token=args.policy.hf_token,
+                horizon=args.policy.horizon,
+                unnorm_key=args.policy.unnorm_key,
+                use_wrist=args.policy.use_wrist,
+                use_secondary=args.policy.use_secondary,
+                use_proprio=args.policy.use_proprio,
+                normalize_gripper=args.policy.normalize_gripper,
+                invert_gripper=args.policy.invert_gripper,
+            )
+            return FalconVLAPolicy(cfg, default_prompt=args.default_prompt)
 
 
 def main(args: Args) -> None:
