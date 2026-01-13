@@ -1,0 +1,62 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Client Policy ALOHA FalconVLA",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/examples/aloha_real/main.py",
+            "python": "${workspaceFolder}/examples/aloha_real/.venv/bin/python",
+            "console": "integratedTerminal",
+            "args": [
+                "--host", "localhost",
+                "--port", "8001",
+            ]
+        },
+        {
+            "name": "Serve Policy ALOHA FalconVLA",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/serve_policy.py",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "console": "integratedTerminal",
+            "args": [
+                "--env", "ALOHA",
+                "--default-prompt", "put the lettuce on the burger",
+                "--port", "8001",
+                "policy:falcon-vla"
+            ]
+        },
+        {
+            "name": "SIM Client Policy ALOHA FalconVLA",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/examples/aloha_sim/main.py",
+            "python": "${workspaceFolder}/examples/aloha_sim/.venv/bin/python",
+            "console": "integratedTerminal",
+            "args": [
+                "--args.port", "8001"
+            ],
+            "env": {
+                "MUJOCO_GL": "egl"
+            }
+        },
+        {
+            "name": "SIM Serve Policy ALOHA FalconVLA",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/serve_policy.py",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "console": "integratedTerminal",
+            "args": [
+                "--env", "ALOHA_SIM",
+                "--default-prompt", "put the lettuce on the burger",
+                "--port", "8001",
+                "policy:falcon-vla"
+            ]
+        }
+    ]
+}

@@ -39,7 +39,18 @@ class AlohaSimEnvironment(_environment.Environment):
 
     @override
     def apply_action(self, action: dict) -> None:
-        gym_obs, reward, terminated, truncated, info = self._gym.step(action["actions"])
+        # Ensure action is 1D by flattening
+        action_array = np.asarray(action["actions"]).flatten()
+        
+        # Validate action dimensions
+        expected_dim = 14  # Aloha robot has 14 action dimensions
+        if action_array.shape[0] != expected_dim:
+            raise ValueError(
+                f"Action dimension mismatch: expected {expected_dim}, got {action_array.shape[0]}. "
+                f"Make sure the policy server is serving a model trained for the Aloha task."
+            )
+        
+        gym_obs, reward, terminated, truncated, info = self._gym.step(action_array)
         self._last_obs = self._convert_observation(gym_obs)  # type: ignore
         self._done = terminated or truncated
         self._episode_reward = max(self._episode_reward, reward)

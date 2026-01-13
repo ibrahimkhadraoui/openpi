@@ -129,7 +129,10 @@ class FalconVLAPolicy(_base_policy.BasePolicy):
         infer_ms = (time.monotonic() - start) * 1000.0
 
         # actions_t is typically (H, 7) on DEVICE
-        actions = actions_t.detach().float().cpu().numpy()
+        if isinstance(actions_t, torch.Tensor):
+            actions = actions_t.detach().float().cpu().numpy()
+        else:
+            actions = np.asarray(actions_t, dtype=np.float32)
 
         if self._cfg.normalize_gripper:
             actions = normalize_gripper_action(actions, binarize=True)

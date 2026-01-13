@@ -15,7 +15,7 @@ from openpi.policies.FalconVLAPolicy import FalconVLAConfig, FalconVLAPolicy
 @dataclasses.dataclass
 class FalconVLA:
     """Serve FalconVLA (HF) via the custom torch policy wrapper."""
-    model_name: str = "/models/FalconVLA"
+    model_name: str = "/home/ibrahim/storage/VLA_MODELS/FalconVLA-8B-ALOHA-FM-DiT-3V-NPD"
     hf_token: str | None = None
     horizon: int = 25
     unnorm_key: str = "burger_270_episodes"
@@ -71,6 +71,9 @@ class Args:
 
 # Default checkpoints that should be used for each environment.
 DEFAULT_CHECKPOINT: dict[EnvMode, Checkpoint] = {
+    EnvMode.ALOHA: FalconVLA(
+        model_name="/home/ibrahim/storage/VLA_MODELS/FalconVLA-8B-ALOHA-FM-DiT-3V-NPD",
+    ),
     EnvMode.ALOHA: Checkpoint(
         config="pi05_aloha",
         dir="gs://openpi-assets/checkpoints/pi05_base",
@@ -113,8 +116,10 @@ def create_policy(args: Args):
                 hf_token=args.policy.hf_token,
                 horizon=args.policy.horizon,
                 unnorm_key=args.policy.unnorm_key,
-                use_wrist=args.policy.use_wrist,
-                use_secondary=args.policy.use_secondary,
+                # use_wrist=args.policy.use_wrist,
+                use_wrist=False,
+                # use_secondary=args.policy.use_secondary,
+                use_secondary=False,
                 use_proprio=args.policy.use_proprio,
                 normalize_gripper=args.policy.normalize_gripper,
                 invert_gripper=args.policy.invert_gripper,
