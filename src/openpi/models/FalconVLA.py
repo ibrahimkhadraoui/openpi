@@ -12,6 +12,9 @@ from transformers import AutoModelForVision2Seq, AutoProcessor
 import numpy as np
 from dataclasses import dataclass
 from enum import Enum
+import cv2
+from datetime import datetime
+
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 ACTION_DIM = 7
 
@@ -289,6 +292,7 @@ def predict_actions_chunk(
         actions: (H, D) tensor on DEVICE
     """
     image = observation["primary_image"]
+    cv2.imwrite(f"debug/images/{datetime.now().strftime('%Y%m%d_%H%M%S')}.png", image)
     input_builder = ActionPromptBuilder(task_label=task_label).add_main_image(image=image)
     if use_wrist:
         input_builder.add_wrist_image(observation["wrist_image"])

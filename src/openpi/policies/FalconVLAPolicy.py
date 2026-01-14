@@ -126,21 +126,31 @@ class FalconVLAPolicy(_base_policy.BasePolicy):
             use_secondary=self._cfg.use_secondary,
             use_proprio=self._cfg.use_proprio,
         )
+        
+        # Convert to numpy if needed
+        if isinstance(actions_t, torch.Tensor):
+            actions_np = actions_t.detach().float().cpu().numpy()
+        else:
+            actions_np = np.asarray(actions_t, dtype=np.float32)
+        
+        # Apply post-processing
+        if self._cfg.normalize_gripper:
+            actions_np = normalize_gripper_action(actions_np, binarize=True)
+        if self._cfg.invert_gripper:
+            actions_np = invert_gripper_action(actions_np)
+        
+
+        # Reshape from (350,) to (25, 14)
+        actions_np = actions_np.reshape(self._cfg.horizon, -1)
+
+        # If we got 7D actions but need 14D (duplicated for bimanual), duplicate
+        if actions_np.shape[-1] == 7:
+            actions_np = np.concatenate([actions_np, actions_np], axis=-1)
+
         infer_ms = (time.monotonic() - start) * 1000.0
 
-        # actions_t is typically (H, 7) on DEVICE
-        if isinstance(actions_t, torch.Tensor):
-            actions = actions_t.detach().float().cpu().numpy()
-        else:
-            actions = np.asarray(actions_t, dtype=np.float32)
-
-        if self._cfg.normalize_gripper:
-            actions = normalize_gripper_action(actions, binarize=True)
-        if self._cfg.invert_gripper:
-            actions = invert_gripper_action(actions)
-
         return {
-            "actions": actions,              # (H, 7)
+            "actions": actions_np,              # (H, 7) or (H, 14) after duplication
             "policy_timing": {"infer_ms": infer_ms},
         }
 
